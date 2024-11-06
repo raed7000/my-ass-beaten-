@@ -1,0 +1,220 @@
+<html><head><base href="." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Punch Your BF!</title>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #ffecf2;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: manipulation;
+  }
+
+  .game-container {
+    position: relative;
+    width: 300px;
+    height: 400px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .boyfriend {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 150px;
+    transition: transform 0.1s;
+  }
+
+  .weapon {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transform-origin: bottom right;
+    transition: transform 0.2s;
+    right: 60%;
+    top: 30%;
+    opacity: 0;
+  }
+
+  .health-bar {
+    width: 80%;
+    height: 20px;
+    background: #eee;
+    border-radius: 10px;
+    margin: 20px auto;
+    overflow: hidden;
+  }
+
+  .health-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff4d6d, #ff758f);
+    transition: width 0.3s;
+  }
+
+  .weapon-select {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .weapon-btn {
+    padding: 10px;
+    background: #ff758f;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .weapon-btn:active {
+    transform: scale(0.95);
+  }
+
+  .apology-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    25% { transform: translateX(-53%) rotate(-5deg); }
+    75% { transform: translateX(-47%) rotate(5deg); }
+  }
+
+  @keyframes weaponSwing {
+    0% { transform: rotate(-45deg); opacity: 1; }
+    50% { transform: rotate(30deg); opacity: 1; }
+    100% { transform: rotate(-45deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <h1>Maliha's Revenge Game 💕</h1>
+  
+  <div class="health-bar">
+    <div class="health-fill"></div>
+  </div>
+
+  <div class="game-container">
+    <svg class="boyfriend" viewBox="0 0 100 150">
+      <circle cx="50" cy="30" r="20" fill="#FFD7D7"/>
+      <circle cx="43" cy="25" r="3" fill="#000"/>
+      <circle cx="57" cy="25" r="3" fill="#000"/>
+      <path d="M45 35 Q50 40 55 35" stroke="#000" fill="none"/>
+      <rect x="35" y="50" width="30" height="40" fill="#87CEEB" rx="5"/>
+      <rect x="25" y="55" width="10" height="30" fill="#FFD7D7" rx="5"/>
+      <rect x="65" y="55" width="10" height="30" fill="#FFD7D7" rx="5"/>
+      <rect x="35" y="90" width="13" height="35" fill="#4444FF" rx="5"/>
+      <rect x="52" y="90" width="13" height="35" fill="#4444FF" rx="5"/>
+      <ellipse cx="41.5" cy="125" rx="6" ry="3" fill="#000"/>
+      <ellipse cx="58.5" cy="125" rx="6" ry="3" fill="#000"/>
+    </svg>
+
+    <svg class="weapon" viewBox="0 0 50 50"></svg>
+  </div>
+
+  <div class="weapon-select">
+    <button class="weapon-btn" data-damage="10" data-weapon="👊">👊 Punch</button>
+    <button class="weapon-btn" data-damage="15" data-weapon="👡">👡 Slipper</button>
+    <button class="weapon-btn" data-damage="20" data-weapon="🍳">🍳 Pan</button>
+    <button class="weapon-btn" data-damage="25" data-weapon="🎮">🎮 Controller</button>
+    <button class="weapon-btn" data-damage="30" data-weapon="📱">📱 Phone</button>
+  </div>
+
+  <div class="apology-modal">
+    <div class="apology-content">
+      <h2>I'm So Sorry Maliha! 🥺</h2>
+      <p>My dearest Maliha, I'm really sorry for whatever I did to upset you!</p>
+      <p>I'm sorry for the last few days. I promise to be good boy from now on and just incase ajk beshi marte paro nai akhn maro! 🙏</p>
+      <p>You mean the world to me and I promise to be better! ❤️</p>
+      <p>Please forgive me! I'll buy you your favorite food and we can watch any movie you want! 🎬🍿</p>
+      <button onclick="resetGame()">Accept Apology ❤️</button>
+    </div>
+  </div>
+
+<script>
+let health = 100;
+const boyfriend = document.querySelector('.boyfriend');
+const healthFill = document.querySelector('.health-fill');
+const apologyModal = document.querySelector('.apology-modal');
+const weapon = document.querySelector('.weapon');
+
+document.querySelectorAll('.weapon-btn').forEach(button => {
+  button.addEventListener('click', function() {
+    const damage = parseInt(this.dataset.damage);
+    const weaponEmoji = this.dataset.weapon;
+    attack(damage, weaponEmoji);
+  });
+});
+
+function attack(damage, weaponEmoji) {
+  weapon.innerHTML = `<text x="50%" y="50%" font-size="30" text-anchor="middle" dominant-baseline="middle">${weaponEmoji}</text>`;
+  weapon.style.animation = 'weaponSwing 0.5s forwards';
+  
+  boyfriend.style.animation = 'shake 0.5s';
+  
+  health -= damage;
+  healthFill.style.width = `${Math.max(0, health)}%`;
+
+  setTimeout(() => {
+    boyfriend.style.animation = '';
+    weapon.style.animation = '';
+  }, 500);
+
+  if (health <= 0) {
+    setTimeout(() => {
+      apologyModal.style.display = 'flex';
+    }, 1000);
+  }
+}
+
+function resetGame() {
+  health = 100;
+  healthFill.style.width = '100%';
+  apologyModal.style.display = 'none';
+}
+
+let touchStartY;
+document.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+}, { passive: false });
+
+let lastTap = 0;
+document.querySelector('.boyfriend').addEventListener('click', function(e) {
+  const currentTime = new Date().getTime();
+  const tapLength = currentTime - lastTap;
+  if (tapLength < 500 && tapLength > 0) {
+    attack(50, '💥');
+  }
+  lastTap = currentTime;
+});
+</script>
+</body></html>
